@@ -21,20 +21,16 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'
-          # This tells GitHub where your package-lock.json is
-          cache-dependency-path: './dreamy-bto/package-lock.json'
 
       - name: Install dependencies
-        # This tells GitHub to run the command inside your subfolder
-        working-directory: ./dream_bto
+        # Corrected folder name: dreamy-bto
+        working-directory: ./dreamy-bto
         run: npm install
 
       - name: Build
         working-directory: ./dreamy-bto
         run: npm run build
         env:
-          # This injects your Secret Key into the Vite build process
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
 
       - name: Setup Pages
