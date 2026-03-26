@@ -66,7 +66,7 @@ export async function analyzeBTOPDF(
   preferences: UserPreferences
 ): Promise<AnalysisResult> {
   const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-  const model = "gemini-3.1-pro-preview";
+  const model = "gemini-1.5-flash";
   
   const prompt = `
     You are an expert Singapore HDB BTO consultant. 
