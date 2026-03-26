@@ -1,8 +1,9 @@
-name: Deploy static content to Pages
+name: Deploy Vite Site
 
 on:
   push:
     branches: ["main"]
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -10,29 +11,41 @@ permissions:
   id-token: write
 
 jobs:
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps: deployment.outputs.page_url }}
+  build_and_deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: 'npm'
+          # This tells GitHub where your package-lock.json is
+          cache-dependency-path: './dreamy-bto/package-lock.json'
+
       - name: Install dependencies
+        # This tells GitHub to run the command inside your subfolder
+        working-directory: ./dream_bto
         run: npm install
+
       - name: Build
+        working-directory: ./dreamy-bto
         run: npm run build
+        env:
+          # This injects your Secret Key into the Vite build process
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+
       - name: Setup Pages
         uses: actions/configure-pages@v4
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: './dist'
+          # Vite puts the finished website in a folder called 'dist'
+          path: './dreamy-bto/dist'
+
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
