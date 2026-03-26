@@ -21,16 +21,15 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: 'npm'
 
       - name: Install dependencies
-        # Corrected folder name: dreamy-bto
-        working-directory: ./dreamy-bto
         run: npm install
 
       - name: Build
-        working-directory: ./dreamy-bto
         run: npm run build
         env:
+          # This injects your secret key into the Vite build
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
 
       - name: Setup Pages
@@ -40,7 +39,7 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           # Vite puts the finished website in a folder called 'dist'
-          path: './dreamy-bto/dist'
+          path: './dist'
 
       - name: Deploy to GitHub Pages
         id: deployment
