@@ -10,6 +10,12 @@ on:
   pull_request_review:
     types: [submitted]
 
+permissions:
+  id-token: write
+  contents: write
+  issues: write
+  pull-requests: write
+
 jobs:
   claude:
     if: |
@@ -18,10 +24,6 @@ jobs:
       (github.event_name == 'issues' && contains(github.event.issue.body, '@claude')) ||
       (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude'))
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      issues: write
-      pull-requests: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -32,3 +34,5 @@ jobs:
         uses: anthropics/claude-code-action@beta
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
