@@ -62,6 +62,7 @@ export default function App() {
   const [isSunshineSearchOpen, setIsSunshineSearchOpen] = useState(false);
   const [sunshineSearchForm, setSunshineSearchForm] = useState({ block: '', unit: '', floor: '' });
   const [isSunshineSearchLoading, setIsSunshineSearchLoading] = useState(false);
+  const [analysisError, setAnalysisError] = useState<string | null>(null);
 
   const handleSunshineSearch = async () => {
     if (!sunshineSearchForm.block || !sunshineSearchForm.unit || !sunshineSearchForm.floor) return;
@@ -185,6 +186,12 @@ export default function App() {
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      const MAX_SIZE_MB = 20;
+      if (file.size > MAX_SIZE_MB * 1024 * 1024) {
+        alert(`PDF is too large (${(file.size / 1024 / 1024).toFixed(1)} MB). Please upload a PDF under ${MAX_SIZE_MB} MB.`);
+        e.target.value = '';
+        return;
+      }
       setPdfFile(file);
       const reader = new FileReader();
       reader.onload = () => {
@@ -198,13 +205,15 @@ export default function App() {
 
   const runAnalysis = async () => {
     setStep('analyzing');
+    setAnalysisError(null);
     try {
       const result = await analyzeBTOPDF(pdfBase64, preferences);
       setAnalysis(result);
       setStep('results');
     } catch (error) {
       console.error("Analysis failed", error);
-      alert("Failed to analyze PDF. Please try again.");
+      const message = error instanceof Error ? error.message : String(error);
+      setAnalysisError(message);
       setStep('preferences');
     }
   };
@@ -305,6 +314,15 @@ export default function App() {
               exit={{ opacity: 0, x: -20 }}
               className="space-y-8"
             >
+              {analysisError && (
+                <div className="flex items-start gap-3 p-4 bg-red-50 border border-red-200 rounded-2xl text-red-700">
+                  <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
+                  <div className="space-y-1">
+                    <p className="font-semibold text-sm">Analysis failed</p>
+                    <p className="text-xs leading-relaxed">{analysisError}</p>
+                  </div>
+                </div>
+              )}
               <div className="flex items-center gap-4 mb-8">
                 <div className="p-2 bg-orange-100 rounded-lg">
                   <FileText className="w-6 h-6 text-orange-600" />

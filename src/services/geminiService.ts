@@ -145,7 +145,7 @@ export async function analyzeBTOPDF(
 
   const toolUse = response.content.find((b) => b.type === "tool_use");
   if (!toolUse || toolUse.type !== "tool_use") {
-    throw new Error("No structured output from Claude");
+    throw new Error("No structured output from Claude. The model may have hit its output token limit — try a smaller PDF.");
   }
   return toolUse.input as unknown as AnalysisResult;
 }
@@ -212,7 +212,7 @@ export async function analyzeSpecificUnit(
 
   const toolUse = response.content.find((b) => b.type === "tool_use");
   if (!toolUse || toolUse.type !== "tool_use") {
-    throw new Error("No structured output from Claude");
+    throw new Error("No structured output from Claude. The model may have hit its output token limit — try a smaller PDF.");
   }
   return toolUse.input as unknown as BTOUnit;
 }
