@@ -18,7 +18,7 @@ npm run preview    # Preview production build
 
 ## Environment Setup
 
-Copy `.env.example` to `.env.local` and set `GEMINI_API_KEY`. The Vite config injects it at build time via `process.env.GEMINI_API_KEY` — it is a client-side key baked into the bundle.
+Copy `.env.example` to `.env.local` and set `ANTHROPIC_API_KEY_DREAMYBTO`. The Vite config injects it at build time via `process.env.ANTHROPIC_API_KEY_DREAMYBTO` — it is a client-side key baked into the bundle. For GitHub Pages deployment, the secret must be named `ANTHROPIC_API_KEY_DREAMYBTO` in repository settings.
 
 ## Architecture
 

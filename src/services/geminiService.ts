@@ -55,7 +55,7 @@ const BTO_UNIT_SCHEMA = {
 
 function createClient(): Anthropic {
   return new Anthropic({
-    apiKey: process.env.ANTHROPIC_API_KEY,
+    apiKey: process.env.ANTHROPIC_API_KEY_DREAMYBTO,
     dangerouslyAllowBrowser: true,
   });
 }
