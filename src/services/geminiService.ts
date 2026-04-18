@@ -66,8 +66,8 @@ export async function analyzeBTOPDF(
   preferences: UserPreferences
 ): Promise<AnalysisResult> {
   const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-  const model = "gemini-3.1-pro-preview";
-  
+  const model = "gemini-2.0-flash";
+
   const prompt = `
     You are an expert Singapore HDB BTO consultant. 
     I have provided a BTO project brochure PDF. 
@@ -172,7 +172,7 @@ export async function analyzeSpecificUnit(
   floor: number
 ): Promise<BTOUnit> {
   const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-  const model = "gemini-3.1-pro-preview";
+  const model = "gemini-2.0-flash";
 
   const prompt = `
     Analyze this specific BTO unit: Block ${block}, Unit ${unitNumber}, Floor ${floor}.
