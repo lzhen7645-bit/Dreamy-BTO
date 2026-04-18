@@ -8,7 +8,9 @@ export default defineConfig(({mode}) => {
   return {
     plugins: [react(), tailwindcss()],
     define: {
-      'process.env.ANTHROPIC_API_KEY': JSON.stringify(env.ANTHROPIC_API_KEY),
+      'process.env.ANTHROPIC_API_KEY_DREAMYBTO': JSON.stringify(
+        env.ANTHROPIC_API_KEY_DREAMYBTO ?? process.env.ANTHROPIC_API_KEY_DREAMYBTO
+      ),
     },
     resolve: {
       alias: {
