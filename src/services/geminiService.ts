@@ -1,77 +1,75 @@
-import { GoogleGenAI, Type } from "@google/genai";
+import Anthropic from "@anthropic-ai/sdk";
 import { AnalysisResult, UserPreferences, BTOUnit } from "../types";
 
 const BTO_UNIT_SCHEMA = {
-  type: Type.OBJECT,
+  type: "object",
   properties: {
-    block: { type: Type.STRING },
-    unitNumber: { type: Type.STRING },
-    floor: { type: Type.NUMBER },
-    type: { type: Type.STRING },
-    facing: { type: Type.STRING },
-    pros: { type: Type.ARRAY, items: { type: Type.STRING } },
-    cons: { type: Type.ARRAY, items: { type: Type.STRING } },
-    score: { type: Type.NUMBER },
-    reasoning: { type: Type.STRING },
+    block: { type: "string" },
+    unitNumber: { type: "string" },
+    floor: { type: "number" },
+    type: { type: "string" },
+    facing: { type: "string" },
+    pros: { type: "array", items: { type: "string" } },
+    cons: { type: "array", items: { type: "string" } },
+    score: { type: "number" },
+    reasoning: { type: "string" },
     detailedAnalysis: {
-      type: Type.OBJECT,
+      type: "object",
       properties: {
-        noise: { type: Type.STRING },
-        sunshine: { type: Type.STRING },
-        proximity: { type: Type.STRING },
-        view: { type: Type.STRING },
-        lift: { type: Type.STRING }
+        noise: { type: "string" },
+        sunshine: { type: "string" },
+        proximity: { type: "string" },
+        view: { type: "string" },
+        lift: { type: "string" },
       },
-      required: ["noise", "sunshine", "proximity", "view", "lift"]
+      required: ["noise", "sunshine", "proximity", "view", "lift"],
     },
     grades: {
-      type: Type.OBJECT,
+      type: "object",
       properties: {
-        noise: { type: Type.NUMBER },
-        sunshine: { type: Type.NUMBER },
-        proximity: { type: Type.NUMBER },
-        view: { type: Type.NUMBER },
-        lift: { type: Type.NUMBER }
+        noise: { type: "number" },
+        sunshine: { type: "number" },
+        proximity: { type: "number" },
+        view: { type: "number" },
+        lift: { type: "number" },
       },
-      required: ["noise", "sunshine", "proximity", "view", "lift"]
+      required: ["noise", "sunshine", "proximity", "view", "lift"],
     },
-    floorPlanPage: { type: Type.NUMBER }
+    floorPlanPage: { type: "number" },
   },
-  required: ["block", "unitNumber", "floor", "type", "facing", "pros", "cons", "score", "reasoning", "detailedAnalysis", "grades", "floorPlanPage"]
+  required: [
+    "block",
+    "unitNumber",
+    "floor",
+    "type",
+    "facing",
+    "pros",
+    "cons",
+    "score",
+    "reasoning",
+    "detailedAnalysis",
+    "grades",
+    "floorPlanPage",
+  ],
 };
 
-const ANALYSIS_RESULT_SCHEMA = {
-  type: Type.OBJECT,
-  properties: {
-    topSuggestions: {
-      type: Type.ARRAY,
-      items: BTO_UNIT_SCHEMA
-    },
-    projectOverview: { type: Type.STRING }
-  },
-  required: ["topSuggestions", "projectOverview"]
-};
-
-function cleanJson(text: string): string {
-  // Remove markdown code blocks if present
-  let cleaned = text.trim();
-  if (cleaned.startsWith("```")) {
-    cleaned = cleaned.replace(/^```(?:json)?\n?/, "").replace(/\n?```$/, "");
-  }
-  return cleaned;
+function createClient(): Anthropic {
+  return new Anthropic({
+    apiKey: process.env.ANTHROPIC_API_KEY,
+    dangerouslyAllowBrowser: true,
+  });
 }
 
 export async function analyzeBTOPDF(
   pdfBase64: string,
   preferences: UserPreferences
 ): Promise<AnalysisResult> {
-  const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-  const model = "gemini-3.1-pro-preview";
-  
+  const client = createClient();
+
   const prompt = `
-    You are an expert Singapore HDB BTO consultant. 
-    I have provided a BTO project brochure PDF. 
-    Analyze the provided BTO project brochure PDF. 
+    You are an expert Singapore HDB BTO consultant.
+    I have provided a BTO project brochure PDF.
+    Analyze the provided BTO project brochure PDF.
     Pay close attention to:
     - The Site Plan (usually page 9) to identify block locations relative to roads, playgrounds, and amenities.
     - The Unit Distribution tables (usually pages 10-11) to find available floors and unit types.
@@ -87,7 +85,7 @@ export async function analyzeBTOPDF(
     - Lift Waiting Time: ${preferences.liftWaitingTime === 'important' ? 'Important' : 'Not a priority'}. Priority: ${preferences.priorities.lift}
     - Additional Notes: ${preferences.otherNotes}
 
-    IMPORTANT: 
+    IMPORTANT:
     1. Focus on specific "Unit Numbers" (e.g., 111, 105) as the primary identifier.
     2. For "facing", use standard directions like "North", "South", "East", "West", "North-East", etc.
     3. Ensure the "floor" matches the user's floor preference range.
@@ -99,69 +97,57 @@ export async function analyzeBTOPDF(
        - Estimate the impact on room temperature and aircon usage.
     6. Assign a grade (0-100) for each perspective based on how well it meets the user's preference and priority.
     7. Identify the exact page number in the PDF where the floor plan for this unit type is shown (usually between pages 12-23).
-    
-    Return the result in JSON format matching this structure:
-    {
-      "topSuggestions": [
-        {
-          "block": "string",
-          "unitNumber": "string",
-          "floor": number,
-          "type": "string",
-          "facing": "string",
-          "pros": ["string"],
-          "cons": ["string"],
-          "score": number,
-          "reasoning": "string",
-          "detailedAnalysis": {
-            "noise": "string",
-            "sunshine": "string",
-            "proximity": "string",
-            "view": "string",
-            "lift": "string"
-          },
-          "grades": {
-            "noise": number,
-            "sunshine": number,
-            "proximity": number,
-            "view": number,
-            "lift": number
-          },
-          "floorPlanPage": number
-        }
-      ],
-      "projectOverview": "string"
-    }
+
+    Use the output_analysis tool to return your structured analysis with exactly 6 top unit suggestions.
   `;
 
-  const response = await ai.models.generateContent({
-    model,
-    contents: [
+  const response = await client.beta.messages.create({
+    model: "claude-sonnet-4-6",
+    max_tokens: 8096,
+    betas: ["pdfs-2024-09-25"],
+    tools: [
       {
-        parts: [
-          { text: prompt },
+        name: "output_analysis",
+        description:
+          "Output the structured BTO analysis result with top 6 unit suggestions",
+        input_schema: {
+          type: "object",
+          properties: {
+            topSuggestions: {
+              type: "array",
+              items: BTO_UNIT_SCHEMA,
+            },
+            projectOverview: { type: "string" },
+          },
+          required: ["topSuggestions", "projectOverview"],
+        },
+      },
+    ],
+    tool_choice: { type: "tool", name: "output_analysis" },
+    messages: [
+      {
+        role: "user",
+        content: [
           {
-            inlineData: {
-              mimeType: "application/pdf",
+            type: "document",
+            source: {
+              type: "base64",
+              media_type: "application/pdf",
               data: pdfBase64,
             },
+            cache_control: { type: "ephemeral" },
           },
+          { type: "text", text: prompt },
         ],
       },
     ],
-    config: {
-      responseMimeType: "application/json",
-      responseSchema: ANALYSIS_RESULT_SCHEMA,
-    },
   });
 
-  const text = cleanJson(response.text || "{}");
-  try {
-    return JSON.parse(text);
-  } catch (e) {
-    console.error("Failed to parse JSON from Gemini:", text);
-    throw e;
+  const toolUse = response.content.find((b) => b.type === "tool_use");
+  if (!toolUse || toolUse.type !== "tool_use") {
+    throw new Error("No structured output from Claude");
   }
+  return toolUse.input as unknown as AnalysisResult;
 }
 
 export async function analyzeSpecificUnit(
@@ -171,8 +157,7 @@ export async function analyzeSpecificUnit(
   unitNumber: string,
   floor: number
 ): Promise<BTOUnit> {
-  const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-  const model = "gemini-3.1-pro-preview";
+  const client = createClient();
 
   const prompt = `
     Analyze this specific BTO unit: Block ${block}, Unit ${unitNumber}, Floor ${floor}.
@@ -191,61 +176,43 @@ export async function analyzeSpecificUnit(
     - Estimate the impact on room temperature and aircon usage.
     Identify the floor plan page number.
 
-    Return ONLY the BTOUnit object in JSON format:
-    {
-      "block": "${block}",
-      "unitNumber": "${unitNumber}",
-      "floor": ${floor},
-      "type": "string",
-      "facing": "string",
-      "pros": ["string"],
-      "cons": ["string"],
-      "score": number,
-      "reasoning": "string",
-      "detailedAnalysis": {
-        "noise": "string",
-        "sunshine": "string",
-        "proximity": "string",
-        "view": "string",
-        "lift": "string"
-      },
-      "grades": {
-        "noise": number,
-        "sunshine": number,
-        "proximity": number,
-        "view": number,
-        "lift": number
-      },
-      "floorPlanPage": number
-    }
+    Use the output_unit tool to return your structured analysis.
   `;
 
-  const response = await ai.models.generateContent({
-    model,
-    contents: [
+  const response = await client.beta.messages.create({
+    model: "claude-sonnet-4-6",
+    max_tokens: 4096,
+    betas: ["pdfs-2024-09-25"],
+    tools: [
       {
-        parts: [
-          { text: prompt },
+        name: "output_unit",
+        description: "Output the structured BTO unit analysis",
+        input_schema: BTO_UNIT_SCHEMA,
+      },
+    ],
+    tool_choice: { type: "tool", name: "output_unit" },
+    messages: [
+      {
+        role: "user",
+        content: [
           {
-            inlineData: {
-              mimeType: "application/pdf",
+            type: "document",
+            source: {
+              type: "base64",
+              media_type: "application/pdf",
               data: pdfBase64,
             },
+            cache_control: { type: "ephemeral" },
           },
+          { type: "text", text: prompt },
         ],
       },
     ],
-    config: {
-      responseMimeType: "application/json",
-      responseSchema: BTO_UNIT_SCHEMA,
-    },
   });
 
-  const text = cleanJson(response.text || "{}");
-  try {
-    return JSON.parse(text);
-  } catch (e) {
-    console.error("Failed to parse JSON from Gemini:", text);
-    throw e;
+  const toolUse = response.content.find((b) => b.type === "tool_use");
+  if (!toolUse || toolUse.type !== "tool_use") {
+    throw new Error("No structured output from Claude");
   }
+  return toolUse.input as unknown as BTOUnit;
 }
