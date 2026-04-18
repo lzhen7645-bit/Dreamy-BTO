@@ -54,8 +54,15 @@ const BTO_UNIT_SCHEMA = {
 };
 
 function createClient(): Anthropic {
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) {
+    throw new Error(
+      "ANTHROPIC_API_KEY is not configured. For local development, set it in .env.local. " +
+      "For GitHub Pages, add ANTHROPIC_API_KEY as a repository secret and ensure the build workflow injects it."
+    );
+  }
   return new Anthropic({
-    apiKey: process.env.ANTHROPIC_API_KEY,
+    apiKey,
     dangerouslyAllowBrowser: true,
   });
 }
