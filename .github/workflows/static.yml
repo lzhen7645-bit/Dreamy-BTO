@@ -30,7 +30,7 @@ jobs:
         run: npm run build
         env:
           # This injects your secret key into the Vite build
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          ANTHROPIC_API_KEY_DREAMYBTO: ${{ secrets.ANTHROPIC_API_KEY_DREAMYBTO }}
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
