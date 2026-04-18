@@ -59,6 +59,7 @@ export interface BTOUnit {
     lift: number; // 0-100
   };
   floorPlanPage: number; // The page number in the PDF where this unit's layout is shown
+  buildingOrientationDegrees: number; // Degrees clockwise from North that the floor plan's "up" direction points (from page 9 site plan)
 }
 
 export interface AnalysisResult {

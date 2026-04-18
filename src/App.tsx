@@ -815,12 +815,13 @@ export default function App() {
               <X className="w-6 h-6" />
             </button>
             <div className="p-10">
-              <SunshineMonitor 
-                unitFacing={selectedUnitForSun.facing} 
+              <SunshineMonitor
+                unitFacing={selectedUnitForSun.facing}
                 unitId={selectedUnitForSun.unitNumber}
                 flatType={selectedUnitForSun.type}
                 pdfData={pdfBase64}
                 pageNumber={selectedUnitForSun.floorPlanPage}
+                buildingOrientationDegrees={selectedUnitForSun.buildingOrientationDegrees}
               />
             </div>
           </motion.div>

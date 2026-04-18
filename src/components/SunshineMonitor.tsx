@@ -14,9 +14,10 @@ interface SunshineMonitorProps {
   flatType: FlatType;
   pdfData: string; // Base64 PDF data
   pageNumber: number;
+  buildingOrientationDegrees?: number;
 }
 
-export const SunshineMonitor: React.FC<SunshineMonitorProps> = ({ unitFacing, unitId, flatType, pdfData, pageNumber }) => {
+export const SunshineMonitor: React.FC<SunshineMonitorProps> = ({ unitFacing, unitId, flatType, pdfData, pageNumber, buildingOrientationDegrees = 0 }) => {
   const [loading, setLoading] = useState(true);
   const [pdfDoc, setPdfDoc] = useState<pdfjs.PDFDocumentProxy | null>(null);
   const [floorPlanImageUrl, setFloorPlanImageUrl] = useState<string | undefined>(undefined);
@@ -115,10 +116,10 @@ export const SunshineMonitor: React.FC<SunshineMonitorProps> = ({ unitFacing, un
   }, [pdfDoc, pageNumber]);
 
   return (
-    <SunAnalysis 
-      latitude={1.3521} 
-      longitude={103.8198} 
-      buildingOrientation={0}
+    <SunAnalysis
+      latitude={1.3521}
+      longitude={103.8198}
+      buildingOrientation={buildingOrientationDegrees}
       unitFacing={unitFacing}
       unitId={unitId}
       floorPlanImage={floorPlanImageUrl}

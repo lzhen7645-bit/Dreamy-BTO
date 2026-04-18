@@ -36,6 +36,7 @@ const BTO_UNIT_SCHEMA = {
       required: ["noise", "sunshine", "proximity", "view", "lift"],
     },
     floorPlanPage: { type: "number" },
+    buildingOrientationDegrees: { type: "number" },
   },
   required: [
     "block",
@@ -50,6 +51,7 @@ const BTO_UNIT_SCHEMA = {
     "detailedAnalysis",
     "grades",
     "floorPlanPage",
+    "buildingOrientationDegrees",
   ],
 };
 
@@ -97,6 +99,7 @@ export async function analyzeBTOPDF(
        - Estimate the impact on room temperature and aircon usage.
     6. Assign a grade (0-100) for each perspective based on how well it meets the user's preference and priority.
     7. Identify the exact page number in the PDF where the floor plan for this unit type is shown (usually between pages 12-23).
+    8. For "buildingOrientationDegrees": Look at the Site Plan on page 9, which includes a North arrow. Determine how many degrees clockwise from true North the floor plan's "up" direction points. For example: if the top of the floor plan faces North, set 0. If it faces East, set 90. If it faces South-West, set 225. This is critical for accurate sun direction rendering.
 
     Use the output_analysis tool to return your structured analysis with exactly 6 top unit suggestions.
   `;
@@ -175,6 +178,7 @@ export async function analyzeSpecificUnit(
     - Mention the "worst month" for sunshine intensity.
     - Estimate the impact on room temperature and aircon usage.
     Identify the floor plan page number.
+    For "buildingOrientationDegrees": Look at the Site Plan on page 9, which includes a North arrow. Determine how many degrees clockwise from true North the floor plan's "up" direction points (0 = top faces North, 90 = top faces East, 180 = top faces South, 270 = top faces West).
 
     Use the output_unit tool to return your structured analysis.
   `;
