@@ -7,48 +7,64 @@ interface SunOverlayProps {
   width: number;
   height: number;
   buildingOrientation: number;
-  focusPoint?: { x: number; y: number }; // Local coordinates relative to the current view
+  windowFacingDegrees: number;
+  focusPoint?: { x: number; y: number };
 }
 
-export const SunOverlay: React.FC<SunOverlayProps> = ({ 
-  azimuth, 
-  altitude, 
-  width, 
+export const SunOverlay: React.FC<SunOverlayProps> = ({
+  azimuth,
+  altitude,
+  width,
   height,
   buildingOrientation,
+  windowFacingDegrees,
   focusPoint
 }) => {
-  // Target the focus point if provided, otherwise the center
   const targetX = focusPoint?.x ?? width / 2;
   const targetY = focusPoint?.y ?? height / 2;
-  
+
   const radius = Math.min(width, height) * 0.45;
-  
-  // Adjust azimuth based on building orientation
+
+  // Sun position — adjusted relative to floor plan orientation
   const adjustedAzimuth = (azimuth - buildingOrientation + 360) % 360;
-  
-  // Calculate sun icon position relative to the target
   const sunVector = azimuthToVector(adjustedAzimuth);
   const sunX = targetX + sunVector.x * (radius + 60);
   const sunY = targetY + sunVector.y * (radius + 60);
 
-  // Calculate sunlight polygon
-  // The sun is at (sunX, sunY). The light projects from the sun towards the target.
-  const beamAngle = 0.4; // width of the beam in radians
-  const beamLength = Math.max(width, height) * 3; // Long enough to cover the unit
-  
-  // Direction from sun to target
+  // Sunlight beam polygon
+  const beamAngle = 0.4;
+  const beamLength = Math.max(width, height) * 3;
   const toTargetAngle = Math.atan2(targetY - sunY, targetX - sunX);
-  
   const p1x = sunX + Math.cos(toTargetAngle - beamAngle) * beamLength;
   const p1y = sunY + Math.sin(toTargetAngle - beamAngle) * beamLength;
   const p2x = sunX + Math.cos(toTargetAngle + beamAngle) * beamLength;
   const p2y = sunY + Math.sin(toTargetAngle + beamAngle) * beamLength;
-
   const points = `${sunX},${sunY} ${p1x},${p1y} ${p2x},${p2y}`;
 
+  // Window wall indicator — W1 window direction relative to floor plan image
+  const windowRelativeDegrees = (windowFacingDegrees - buildingOrientation + 360) % 360;
+  const windowVec = azimuthToVector(windowRelativeDegrees);
+  const windowMarkerX = targetX + windowVec.x * radius * 0.85;
+  const windowMarkerY = targetY + windowVec.y * radius * 0.85;
+  const perpX = -windowVec.y;
+  const perpY = windowVec.x;
+  const markerHalfLen = 28;
+  const wx1 = windowMarkerX + perpX * markerHalfLen;
+  const wy1 = windowMarkerY + perpY * markerHalfLen;
+  const wx2 = windowMarkerX - perpX * markerHalfLen;
+  const wy2 = windowMarkerY - perpY * markerHalfLen;
+
+  // Compass labels — rotated to reflect real-world directions
+  const compassPoints = [
+    { label: 'N', degree: 0 },
+    { label: 'E', degree: 90 },
+    { label: 'S', degree: 180 },
+    { label: 'W', degree: 270 },
+  ];
+  const compassRadius = Math.min(width, height) * 0.47;
+
   return (
-    <svg 
+    <svg
       className="absolute top-0 left-0 w-full h-full pointer-events-none z-10 overflow-visible"
       viewBox={`0 0 ${width} ${height}`}
       xmlns="http://www.w3.org/2000/svg"
@@ -66,8 +82,8 @@ export const SunOverlay: React.FC<SunOverlayProps> = ({
 
       {/* Sunlight Polygon */}
       {altitude > 0 && (
-        <polygon 
-          points={points} 
+        <polygon
+          points={points}
           fill="url(#sunlightGradient)"
           className="transition-all duration-700 ease-in-out"
           style={{ transformOrigin: `${sunX}px ${sunY}px` }}
@@ -76,18 +92,13 @@ export const SunOverlay: React.FC<SunOverlayProps> = ({
 
       {/* Sun Icon */}
       {altitude > 0 && (
-        <g 
+        <g
           transform={`translate(${sunX}, ${sunY})`}
           className="transition-all duration-700 ease-in-out"
         >
-          {/* Outer Glow */}
           <circle r="22" fill="#d4a373" opacity="0.15" filter="url(#sunGlow)" />
           <circle r="14" fill="#d4a373" opacity="0.2" />
-          
-          {/* Core */}
           <circle r="8" fill="#d4a373" className="shadow-sm" />
-          
-          {/* Rays */}
           {[0, 45, 90, 135, 180, 225, 270, 315].map(angle => (
             <line
               key={angle}
@@ -103,12 +114,53 @@ export const SunOverlay: React.FC<SunOverlayProps> = ({
         </g>
       )}
 
-      {/* Compass Indicators */}
+      {/* Window Wall Indicator (W1) */}
+      <line
+        x1={wx1} y1={wy1}
+        x2={wx2} y2={wy2}
+        stroke="#d4a373"
+        strokeWidth="4"
+        strokeLinecap="round"
+        opacity="0.85"
+        className="transition-all duration-700 ease-in-out"
+      />
+      <text
+        x={windowMarkerX + windowVec.x * 18}
+        y={windowMarkerY + windowVec.y * 18}
+        fill="#d4a373"
+        fontSize="9"
+        fontWeight="bold"
+        textAnchor="middle"
+        dominantBaseline="middle"
+        opacity="0.9"
+        letterSpacing="0.05em"
+      >
+        W1
+      </text>
+
+      {/* Compass Labels — rotated to match real-world directions */}
       <g opacity="0.4">
-        <text x={width / 2} y={24} fill="#5a5a40" fontSize="10" fontWeight="bold" textAnchor="middle" letterSpacing="0.1em">N</text>
-        <text x={width / 2} y={height - 12} fill="#5a5a40" fontSize="10" fontWeight="bold" textAnchor="middle" letterSpacing="0.1em">S</text>
-        <text x={width - 18} y={height / 2} fill="#5a5a40" fontSize="10" fontWeight="bold" textAnchor="middle" letterSpacing="0.1em">E</text>
-        <text x={18} y={height / 2} fill="#5a5a40" fontSize="10" fontWeight="bold" textAnchor="middle" letterSpacing="0.1em">W</text>
+        {compassPoints.map(({ label, degree }) => {
+          const rotated = (degree - buildingOrientation + 360) % 360;
+          const vec = azimuthToVector(rotated);
+          const cx = width / 2 + vec.x * compassRadius;
+          const cy = height / 2 + vec.y * compassRadius;
+          return (
+            <text
+              key={label}
+              x={cx}
+              y={cy}
+              fill="#5a5a40"
+              fontSize="10"
+              fontWeight="bold"
+              textAnchor="middle"
+              dominantBaseline="middle"
+              letterSpacing="0.1em"
+            >
+              {label}
+            </text>
+          );
+        })}
       </g>
     </svg>
   );
