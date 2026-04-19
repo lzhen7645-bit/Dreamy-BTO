@@ -14,6 +14,7 @@ interface SunAnalysisProps {
   floorPlanImage?: string; // URL or DataURL
   unitId: string;
   buildingOrientation: number; // degrees relative to north
+  windowFacingDegrees?: number;
   unitFacing?: string;
   children?: React.ReactNode; // Allow passing custom content like a canvas
 }
@@ -24,6 +25,7 @@ export const SunAnalysis: React.FC<SunAnalysisProps> = ({
   floorPlanImage,
   unitId,
   buildingOrientation,
+  windowFacingDegrees,
   unitFacing = "North",
   children
 }) => {
@@ -280,12 +282,13 @@ export const SunAnalysis: React.FC<SunAnalysisProps> = ({
                         height: `${dimensions.height}px`,
                       }}
                     >
-                      <SunOverlay 
-                        azimuth={sunData.azimuth} 
+                      <SunOverlay
+                        azimuth={sunData.azimuth}
                         altitude={sunData.altitude}
                         width={dimensions.width}
                         height={dimensions.height}
                         buildingOrientation={buildingOrientation}
+                        windowFacingDegrees={windowFacingDegrees}
                         focusPoint={effectiveFocusPoint}
                       />
                     </div>
