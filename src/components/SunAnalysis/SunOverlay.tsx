@@ -42,7 +42,7 @@ export const SunOverlay: React.FC<SunOverlayProps> = ({
   const points = `${sunX},${sunY} ${p1x},${p1y} ${p2x},${p2y}`;
 
   // Window wall indicator — W1 window direction relative to floor plan image
-  const windowRelativeDegrees = (windowFacingDegrees - buildingOrientation + 360) % 360;
+  const windowRelativeDegrees = ((windowFacingDegrees ?? 0) - buildingOrientation + 360) % 360;
   const windowVec = azimuthToVector(windowRelativeDegrees);
   const windowMarkerX = targetX + windowVec.x * radius * 0.85;
   const windowMarkerY = targetY + windowVec.y * radius * 0.85;
