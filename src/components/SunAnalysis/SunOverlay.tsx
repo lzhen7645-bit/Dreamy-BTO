@@ -7,7 +7,7 @@ interface SunOverlayProps {
   width: number;
   height: number;
   buildingOrientation: number;
-  windowFacingDegrees: number;
+  windowFacingDegrees?: number;
   focusPoint?: { x: number; y: number };
 }
 
@@ -115,28 +115,32 @@ export const SunOverlay: React.FC<SunOverlayProps> = ({
       )}
 
       {/* Window Wall Indicator (W1) */}
-      <line
-        x1={wx1} y1={wy1}
-        x2={wx2} y2={wy2}
-        stroke="#d4a373"
-        strokeWidth="4"
-        strokeLinecap="round"
-        opacity="0.85"
-        className="transition-all duration-700 ease-in-out"
-      />
-      <text
-        x={windowMarkerX + windowVec.x * 18}
-        y={windowMarkerY + windowVec.y * 18}
-        fill="#d4a373"
-        fontSize="9"
-        fontWeight="bold"
-        textAnchor="middle"
-        dominantBaseline="middle"
-        opacity="0.9"
-        letterSpacing="0.05em"
-      >
-        W1
-      </text>
+      {windowFacingDegrees !== undefined && (
+        <>
+          <line
+            x1={wx1} y1={wy1}
+            x2={wx2} y2={wy2}
+            stroke="#d4a373"
+            strokeWidth="4"
+            strokeLinecap="round"
+            opacity="0.85"
+            className="transition-all duration-700 ease-in-out"
+          />
+          <text
+            x={windowMarkerX + windowVec.x * 18}
+            y={windowMarkerY + windowVec.y * 18}
+            fill="#d4a373"
+            fontSize="9"
+            fontWeight="bold"
+            textAnchor="middle"
+            dominantBaseline="middle"
+            opacity="0.9"
+            letterSpacing="0.05em"
+          >
+            W1
+          </text>
+        </>
+      )}
 
       {/* Compass Labels — rotated to match real-world directions */}
       <g opacity="0.4">
