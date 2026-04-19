@@ -822,6 +822,7 @@ export default function App() {
                 pdfData={pdfBase64}
                 pageNumber={selectedUnitForSun.floorPlanPage}
                 buildingOrientationDegrees={selectedUnitForSun.buildingOrientationDegrees}
+                windowFacingDegrees={selectedUnitForSun.windowFacingDegrees}
               />
             </div>
           </motion.div>
