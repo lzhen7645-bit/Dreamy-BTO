@@ -60,7 +60,7 @@ export interface BTOUnit {
   };
   floorPlanPage: number; // The page number in the PDF where this unit's layout is shown
   buildingOrientationDegrees: number; // Degrees clockwise from North that the floor plan's "up" direction points (from page 9 site plan)
-  windowFacingDegrees: number; // Absolute compass degrees W1 window wall faces (0=N, 90=E, 180=S, 270=W). From page 9.
+  windowFacingDegrees?: number; // Absolute compass degrees W1 window wall faces (0=N, 90=E, 180=S, 270=W). From page 9.
 }
 
 export interface AnalysisResult {
