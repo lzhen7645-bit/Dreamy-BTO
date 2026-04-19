@@ -89,7 +89,7 @@ export async function analyzeBTOPDF(
 
     IMPORTANT:
     1. Focus on specific "Unit Numbers" (e.g., 111, 105) as the primary identifier.
-    2. For "facing", use standard directions like "North", "South", "East", "West", "North-East", etc.
+    2. For "facing", use standard directions like "North", "South", "East", "West", "North-East", etc. In the floor plan, left = West and right = East. For each unit in the detailed analysis, explicitly state the window facing direction (e.g., "Window W1 faces West").
     3. Ensure the "floor" matches the user's floor preference range.
     4. Provide a detailed analysis for each unit across noise, sunshine, proximity, view, and lift perspectives.
     5. For "sunshine" analysis, specifically review the layout in the PDF:
@@ -100,6 +100,7 @@ export async function analyzeBTOPDF(
     6. Assign a grade (0-100) for each perspective based on how well it meets the user's preference and priority.
     7. Identify the exact page number in the PDF where the floor plan for this unit type is shown (usually between pages 12-23).
     8. For "buildingOrientationDegrees": Look at the Site Plan on page 9, which includes a North arrow. Determine how many degrees clockwise from true North the floor plan's "up" direction points. For example: if the top of the floor plan faces North, set 0. If it faces East, set 90. If it faces South-West, set 225. This is critical for accurate sun direction rendering.
+    9. For "facing": The block maps on pages 12-23 use window type "W1", which means the unit has windows ONLY on the longer side (the wall opposite the door/entrance side). In the floor plan, left = West and right = East. When determining the unit's "facing" direction, look at the floor plan layout, identify the door/entrance side, then report the compass direction the opposite (window) wall faces as the unit's "facing". Do NOT use the general block orientation. In the unit's detailed analysis, explicitly state "Window W1 faces [direction]" so the facing is unambiguous.
 
     Use the output_analysis tool to return your structured analysis with exactly 6 top unit suggestions.
   `;
@@ -179,6 +180,7 @@ export async function analyzeSpecificUnit(
     - Estimate the impact on room temperature and aircon usage.
     Identify the floor plan page number.
     For "buildingOrientationDegrees": Look at the Site Plan on page 9, which includes a North arrow. Determine how many degrees clockwise from true North the floor plan's "up" direction points (0 = top faces North, 90 = top faces East, 180 = top faces South, 270 = top faces West).
+    For "facing": The block maps on pages 12-23 use window type "W1", meaning windows exist ONLY on the longer side (wall opposite the door/entrance). In the floor plan, left = West and right = East. Identify which compass direction that window wall faces — that is the unit's true sun-exposure direction. Do NOT use the general block orientation; trace the specific unit's door and report the compass direction the opposite (window) wall faces. In the sunshine analysis, explicitly state "Window W1 faces [direction]".
 
     Use the output_unit tool to return your structured analysis.
   `;
